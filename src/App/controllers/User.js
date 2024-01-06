@@ -1,7 +1,10 @@
 const UserModel = require("../models/User");
+const TaskModel = require("../models/Task");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const express = require("express");
+const app = express();
 
 class User {
   async login(req, res) {
@@ -29,8 +32,18 @@ class User {
           fullname: user.fullname,
           username: user.username,
         };
-        token = jwt.sign(payload, username + password, { expiresIn: "30m" });
-        refreshToken = jwt.sign({}, username + password, { expiresIn: "3d" });
+
+        const refreshTokenPayload = {
+          userId: user._id,
+        };
+
+        const secretKey = req.app.get("secretKey");
+
+        console.log("secretKey in User", secretKey);
+        token = jwt.sign(payload, secretKey, { expiresIn: "30m" });
+        refreshToken = jwt.sign(refreshTokenPayload, secretKey, {
+          expiresIn: "3d",
+        });
         return res.status(201).json({
           message: "Success",
           token: token, // Gửi token về client
@@ -114,6 +127,13 @@ class User {
         privateKey,
       });
       await newUser.save();
+      const newTask = new TaskModel({
+        userId: newUser._id,
+        todo: [], // or inProgress or done depending on your logic
+        inProgress: [],
+        done: [],
+      });
+      await newTask.save();
       res
         .status(201)
         .json({ message: "User registered successfully", newUser });
