@@ -19,6 +19,10 @@ const taskSchema = new mongoose.Schema({
       },
       endDate: Date,
       color: String,
+      status: {
+        type: String,
+        default: "",
+      },
     },
   ],
   inProgress: [
@@ -34,6 +38,10 @@ const taskSchema = new mongoose.Schema({
       },
       endDate: Date,
       color: String,
+      status: {
+        type: String,
+        default: "",
+      },
     },
   ],
   done: [
@@ -49,6 +57,10 @@ const taskSchema = new mongoose.Schema({
       },
       endDate: Date,
       color: String,
+      status: {
+        type: String,
+        default: "",
+      },
     },
   ],
 });

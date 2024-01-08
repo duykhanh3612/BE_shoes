@@ -142,6 +142,74 @@ class User {
       res.status(500).json({ error: "Internal server error" });
     }
   }
+
+  verifyToken(req, res) {
+    // Lấy token từ tiêu đề Authorization
+    const token = req.headers["authorization"];
+    if (!token) {
+      return res.status(401).json({ message: "Token is missing" });
+    }
+
+    let responseSent = false;
+
+    const secretKey = req.app.get("secretKey");
+
+    // Kiểm tra tính hợp lệ và thời gian hết hạn của token
+    jwt.verify(token.split(" ")[1], secretKey, (err, decoded) => {
+      if (err) {
+        if (!responseSent) {
+          // Chưa gửi phản hồi, gửi phản hồi lỗi
+          res.status(401).json({ message: "Invalid token" });
+          responseSent = true;
+        }
+      } else {
+        // Kiểm tra thời gian hết hạn của token
+        const currentTime = Math.floor(Date.now() / 1000); // Thời gian hiện tại dưới dạng giây
+
+        if (decoded.exp && decoded.exp < currentTime) {
+          // Token đã hết hạn
+          res.status(401).json({ message: "Token has expired" });
+          responseSent = true;
+        } else {
+          // Token hợp lệ, tiếp tục xử lý
+          req.decoded = decoded;
+
+          if (!responseSent) {
+            // Gửi phản hồi thành công nếu chưa gửi
+            res.status(200).json({ message: "Token is valid" });
+            responseSent = true;
+          }
+        }
+      }
+    });
+  }
+
+  refreshToken(req, res) {
+    const refreshToken = req.headers["authorization"];
+
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Refresh token is missing" });
+    }
+
+    const secretKey = req.app.get("secretKey");
+
+    console.log("secretKey in refreshToken : ", secretKey);
+
+    console.log("refreshToken : ", refreshToken);
+
+    jwt.verify(refreshToken.split(" ")[1], secretKey, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: "Invalid refresh token" });
+      }
+
+      // Tạo một token mới và gửi về cho client
+      const newToken = jwt.sign({ userId: decoded.userId }, secretKey, {
+        expiresIn: "15m",
+      });
+
+      res.json({ token: newToken });
+    });
+  }
 }
 
 module.exports = new User();
