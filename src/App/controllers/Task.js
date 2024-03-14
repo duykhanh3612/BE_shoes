@@ -31,7 +31,7 @@ class User {
     // // Giờ đây bạn có thể sử dụng decodedToken để lấy thông tin từ payload
     // const userId = decodedToken.userId;
 
-    const userId = "659912ffb326d839860ea7a1";
+    const userId = "65d9ac4754117f51c3e2ee07";
 
     const { status, text, note, endDate } = req.body;
 
@@ -114,7 +114,7 @@ class User {
 
     const { status, index, text, note, endDate } = req.body;
 
-    let arrayFieldName;
+    let arrayFieldName,arrayToUpdate;
     switch (status) {
       case "todo":
         arrayToUpdate = "todo";
